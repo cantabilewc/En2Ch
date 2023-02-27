@@ -1,4 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+import requests
+from bs4 import BeautifulSoup
 
 #在這裡，Ui_MainWindow 這個類別是繼承自 object，因為在定義 Ui_MainWindow 的時候，
 # 括號內的 object 表示繼承自 object 這個基底類別。不過，這其實是可以省略的，
@@ -6,7 +8,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(383, 301)
+        MainWindow.resize(600, 600)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
 
@@ -14,11 +16,11 @@ class Ui_MainWindow(object):
         self.pushButton.setGeometry(QtCore.QRect(130, 40, 111, 61))
         self.pushButton.setObjectName("pushButton")
         self.pushButton.clicked.connect(self.startTranslating)
-        self.startFlag = [False]  # 將 startFlag 變數宣告為一個 List然後在建立 NewPlainTextEdit 物件的時候傳遞這個 List。這樣在 mousePressEvent 中就可以透過這個 List 存取到 startFlag 變數，並進行修改。
+        self.startFlag = [False]  # 將 startFlag 變數宣告為一個 List然後在建立 CopyPlainTextEdit 物件的時候傳遞這個 List。這樣在 mousePressEvent 中就可以透過這個 List 存取到 startFlag 變數，並進行修改。
 
 #setGeometry是所有继承自QWidget的类（例如QPlainTextEdit）都拥有的方法。在这里，
-# NewPlainTextEdit作为QPlainTextEdit的子类，自然也具有该方法，所以可以在NewPlainTextEdit对象上调用setGeometry方法。
-        self.plainTextEdit = NewPlainTextEdit(self.centralwidget, self.startFlag) #parent object, and argument
+# CopyPlainTextEdit作为QPlainTextEdit的子类，自然也具有该方法，所以可以在CopyPlainTextEdit对象上调用setGeometry方法。
+        self.plainTextEdit = CopyPlainTextEdit(self.centralwidget, self.startFlag) #parent object, and argument
         self.plainTextEdit.setGeometry(QtCore.QRect(40, 120, 301, 121))
         # self.plainTextEdit.setObjectName("plainTextEdit")
 
@@ -53,10 +55,10 @@ class Ui_MainWindow(object):
 # 使得 PlainTextEdit 可以使用 QtWidgets.QPlainTextEdit 中的所有函数和变量。
 # 通过继承 QtWidgets.QPlainTextEdit 类，可以在这个基础上扩展和自定义控件的功能。
 
-# The NewPlainTextEdit class is a subclass of the QPlainTextEdit class and overrides the mousePressEvent method. 
+# The CopyPlainTextEdit class is a subclass of the QPlainTextEdit class and overrides the mousePressEvent method. 
 # This method detects when the left mouse button is clicked and reads the text in the clipboard. 
 # The text in the clipboard is then set as the text of the custom widget.
-# NewPlainTextEdit 是一個自定義的 QtWidgets.QPlainTextEdit 的子類別，
+# CopyPlainTextEdit 是一個自定義的 QtWidgets.QPlainTextEdit 的子類別，
 # 
 # 用於創建一個新的多行純文本編輯框，其 __init__ 方法中的 super() 函數
 # 調用了父類別 QtWidgets.QPlainTextEdit 的 __init__ 方法，
@@ -68,7 +70,7 @@ class Ui_MainWindow(object):
 # 在上述程式碼中， parent=None 是在定義該函式時所設置的預設參數，
 # 即若在建立物件時未給定該參數，則 parent 會預設為 None，表示該物件沒有父物件，
 # 並可獨立存在。若有需要，則可在建立物件時透過指定 parent 參數的方式指定父物件，使得該物件成為該父物件的子物件。
-class NewPlainTextEdit(QtWidgets.QPlainTextEdit):
+class CopyPlainTextEdit(QtWidgets.QPlainTextEdit):
     def __init__(self, parent=None, startFlag=None):
         super().__init__(parent=parent)
         self.setReadOnly(True)
@@ -86,7 +88,34 @@ class NewPlainTextEdit(QtWidgets.QPlainTextEdit):
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton and self.startFlag[0]:  # 存取 startFlag 變數的 List
             clipboard = QtWidgets.QApplication.clipboard()
+            # 取得剪貼簿中的文字
             self.setPlainText(clipboard.text())
+            # 網站的 URL
+            # URL = 'https://fanyi.youdao.com/'
+            url = 'http://fanyi.youdao.com/translate?smartresult=dict&smartresult=rule'
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+            }
+            data = {
+                'i': clipboard.text(),
+                'from': 'AUTO',
+                'to': 'AUTO',
+                'smartresult': 'dict',
+                'client': 'fanyideskweb',
+                'salt': '1534741252894',
+                'sign': '1c2e58f79a8362e4a7b44cdd67a1a9c8',
+                'doctype': 'json',
+                'version': '2.1',
+                'keyfrom': 'fanyi.web',
+                'action': 'FY_BY_REALTIME',
+                'typoResult': 'false'
+            }
+            response = requests.post(url, headers=headers, data=data)
+            result = response.json()
+            translation = result['translateResult'][0][0]['tgt']
+
+            # 將翻譯後的文字顯示在螢幕上
+            print(translation)
 
 
 if __name__ == "__main__":
