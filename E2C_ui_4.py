@@ -10,22 +10,22 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(500, 500)
+        MainWindow.resize(383, 301)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(70, 70, 111, 61))
-        self.pushButton.setObjectName("TranslateButton")
-        self.pushButton.clicked.connect(self.ClickOnButton)
-        # self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget) //plain text
-        # self.plainTextEdit.setGeometry(QtCore.QRect(20, 120, 301, 121))
-        # self.plainTextEdit.setObjectName("plainTextEdit")
+        self.pushButton.setGeometry(QtCore.QRect(130, 40, 111, 61))
+        self.pushButton.setObjectName("pushButton")
+        self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget)
+        self.plainTextEdit.setGeometry(QtCore.QRect(40, 120, 301, 121))
+        self.plainTextEdit.setObjectName("plainTextEdit")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 250, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 383, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -40,19 +40,6 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.pushButton.setText(_translate("MainWindow", "Start Translating"))
 
-    def ClickOnButton(self):
-        self.pushButton.setText('hello world')
-        self.start = True
-
-    def keyPressEvent(self, event):
-        if event == QtCore.QEvent.KeyPress:
-            key = event.key()
-            if key == QtCore.Qt.Key_Control:
-                print("Control key pressed")
-                clipboard = QtWidgets.QApplication.clipboard()
-                selected_text = self.textEdit.textCursor().selectedText()
-                clipboard.setText(selected_text)
-
 
 if __name__ == "__main__":
     import sys
@@ -61,6 +48,4 @@ if __name__ == "__main__":
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
-    # key_event = QtGui.QKeyEvent(QtCore.QEvent.KeyPress, QtCore.Qt.Key_Control, QtCore.Qt.NoModifier)
-    # ui.keyPressEvent(key_event)
     sys.exit(app.exec_())
