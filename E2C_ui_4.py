@@ -103,6 +103,7 @@ class CopyPlainTextEdit(QtWidgets.QPlainTextEdit):
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
         }
+        # 根據程式碼中的 data 參數設定，翻譯的API使用了 "FY_BY_REALTIME" 的 action，這表示它是一個即時翻譯的請求，只能翻譯一個句子，並且忽略後面的內容。如果想要翻譯多個句子，需要使用其他選項，例如 "FY_BY_CLICKBUTTION"，這可以讓API知道在請求中翻譯的是多個句子。你可以修改 data 中的 action 屬性，以便翻譯多個句子。此外，請注意，翻譯的結果是以 JSON 格式返回的，因此需要對結果進行解析以提取所需的翻譯內容
         data = {
             'i': text,
             'from': 'AUTO',
@@ -114,13 +115,13 @@ class CopyPlainTextEdit(QtWidgets.QPlainTextEdit):
             'doctype': 'json',
             'version': '2.1',
             'keyfrom': 'fanyi.web',
-            'action': 'FY_BY_REALTIME',
+            'action': 'FY_BY_CLICKBUTTION',
             'typoResult': 'false'
         }
         response = requests.post(url, headers=headers, data=data)
         result = response.json()
         translation = result['translateResult'][0][0]['tgt']
-        print(translation)
+        print(result)
         self.plainTextEdit_result.setPlainText(translation)
 
 
