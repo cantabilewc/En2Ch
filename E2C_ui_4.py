@@ -13,9 +13,12 @@ class Ui_MainWindow(object):
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setGeometry(QtCore.QRect(130, 40, 111, 61))
         self.pushButton.setObjectName("pushButton")
+        self.pushButton.clicked.connect(self.startTranslating)
+        self.startFlag = [False]  # 將 startFlag 變數宣告為一個 List然後在建立 NewPlainTextEdit 物件的時候傳遞這個 List。這樣在 mousePressEvent 中就可以透過這個 List 存取到 startFlag 變數，並進行修改。
+
 #setGeometry是所有继承自QWidget的类（例如QPlainTextEdit）都拥有的方法。在这里，
 # NewPlainTextEdit作为QPlainTextEdit的子类，自然也具有该方法，所以可以在NewPlainTextEdit对象上调用setGeometry方法。
-        self.plainTextEdit = NewPlainTextEdit(self.centralwidget)
+        self.plainTextEdit = NewPlainTextEdit(self.centralwidget, self.startFlag) #parent object, and argument
         self.plainTextEdit.setGeometry(QtCore.QRect(40, 120, 301, 121))
         # self.plainTextEdit.setObjectName("plainTextEdit")
 
@@ -38,6 +41,13 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.pushButton.setText(_translate("MainWindow", "Start Translating"))
 
+    def startTranslating(self):
+        self.startFlag[0] = not self.startFlag[0]
+        if self.startFlag[0]:
+            self.pushButton.setText("Translating")
+        else:
+            self.pushButton.setText("Start Translating")
+
 #在这个代码中，括号里的参数是用来指定 PlainTextEdit 类的父类或基类的，
 # 它告诉 PyQt5 PlainTextEdit 继承了 QtWidgets.QPlainTextEdit 类的所有属性和方法，
 # 使得 PlainTextEdit 可以使用 QtWidgets.QPlainTextEdit 中的所有函数和变量。
@@ -59,10 +69,12 @@ class Ui_MainWindow(object):
 # 即若在建立物件時未給定該參數，則 parent 會預設為 None，表示該物件沒有父物件，
 # 並可獨立存在。若有需要，則可在建立物件時透過指定 parent 參數的方式指定父物件，使得該物件成為該父物件的子物件。
 class NewPlainTextEdit(QtWidgets.QPlainTextEdit):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, startFlag=None):
         super().__init__(parent=parent)
         self.setReadOnly(True)
         self.setObjectName("plainTextEdit")
+        self.startFlag = startFlag  # 在建立物件時將 startFlag 變數的 List 存下來
+
 #在 PyQt5 中，如果要处理某种类型的事件，通常需要使用对应的事件处理方法，
 # 并按照 PyQt5 事件处理机制的规范命名，例如 mousePressEvent，keyPressEvent 等等。
 # 这些事件处理方法都有一个固定的参数，即 event，它是 PyQt5 中的事件对象，包含了事件的相关信息。
@@ -72,7 +84,7 @@ class NewPlainTextEdit(QtWidgets.QPlainTextEdit):
 # 在这个函数中，event 参数只是一个普通的参数名，你需要自己处理这个参数并在函数中使用它。
 
     def mousePressEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
+        if event.button() == QtCore.Qt.LeftButton and self.startFlag[0]:  # 存取 startFlag 變數的 List
             clipboard = QtWidgets.QApplication.clipboard()
             self.setPlainText(clipboard.text())
 
