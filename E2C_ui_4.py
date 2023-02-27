@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(600, 600)
+        MainWindow.resize(400, 400)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
 
@@ -20,9 +20,12 @@ class Ui_MainWindow(object):
 
 #setGeometry是所有继承自QWidget的类（例如QPlainTextEdit）都拥有的方法。在这里，
 # CopyPlainTextEdit作为QPlainTextEdit的子类，自然也具有该方法，所以可以在CopyPlainTextEdit对象上调用setGeometry方法。
-        self.plainTextEdit = CopyPlainTextEdit(self.centralwidget, self.startFlag) #parent object, and argument
+        self.plainTextEdit_result = QtWidgets.QPlainTextEdit(self.centralwidget) #parent 
+        self.plainTextEdit_result.setGeometry(QtCore.QRect(40, 250, 301, 121))
+        self.plainTextEdit_result.setObjectName("translating result")
+
+        self.plainTextEdit = CopyPlainTextEdit(self.centralwidget, self.startFlag, self.plainTextEdit_result) #parent object, and argument
         self.plainTextEdit.setGeometry(QtCore.QRect(40, 120, 301, 121))
-        # self.plainTextEdit.setObjectName("plainTextEdit")
 
         MainWindow.setCentralWidget(self.centralwidget)
 
@@ -71,11 +74,12 @@ class Ui_MainWindow(object):
 # 即若在建立物件時未給定該參數，則 parent 會預設為 None，表示該物件沒有父物件，
 # 並可獨立存在。若有需要，則可在建立物件時透過指定 parent 參數的方式指定父物件，使得該物件成為該父物件的子物件。
 class CopyPlainTextEdit(QtWidgets.QPlainTextEdit):
-    def __init__(self, parent=None, startFlag=None):
+    def __init__(self, parent=None, startFlag=None, plainTextEdit_result=None):
         super().__init__(parent=parent)
         self.setReadOnly(True)
         self.setObjectName("plainTextEdit")
         self.startFlag = startFlag  # 在建立物件時將 startFlag 變數的 List 存下來
+        self.plainTextEdit_result = plainTextEdit_result
 
 #在 PyQt5 中，如果要处理某种类型的事件，通常需要使用对应的事件处理方法，
 # 并按照 PyQt5 事件处理机制的规范命名，例如 mousePressEvent，keyPressEvent 等等。
@@ -86,36 +90,38 @@ class CopyPlainTextEdit(QtWidgets.QPlainTextEdit):
 # 在这个函数中，event 参数只是一个普通的参数名，你需要自己处理这个参数并在函数中使用它。
 
     def mousePressEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton and self.startFlag[0]:  # 存取 startFlag 變數的 List
+        if event.button() == QtCore.Qt.LeftButton and self.startFlag[0]:
             clipboard = QtWidgets.QApplication.clipboard()
-            # 取得剪貼簿中的文字
-            self.setPlainText(clipboard.text())
-            # 網站的 URL
-            # URL = 'https://fanyi.youdao.com/'
-            url = 'http://fanyi.youdao.com/translate?smartresult=dict&smartresult=rule'
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-            }
-            data = {
-                'i': clipboard.text(),
-                'from': 'AUTO',
-                'to': 'AUTO',
-                'smartresult': 'dict',
-                'client': 'fanyideskweb',
-                'salt': '1534741252894',
-                'sign': '1c2e58f79a8362e4a7b44cdd67a1a9c8',
-                'doctype': 'json',
-                'version': '2.1',
-                'keyfrom': 'fanyi.web',
-                'action': 'FY_BY_REALTIME',
-                'typoResult': 'false'
-            }
-            response = requests.post(url, headers=headers, data=data)
-            result = response.json()
-            translation = result['translateResult'][0][0]['tgt']
+            text = clipboard.text()
+            if not text:
+                return
+            self.setPlainText(text)
+            self.translate_text(text)
 
-            # 將翻譯後的文字顯示在螢幕上
-            print(translation)
+    def translate_text(self, text):
+        url = 'http://fanyi.youdao.com/translate?smartresult=dict&smartresult=rule'
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+        }
+        data = {
+            'i': text,
+            'from': 'AUTO',
+            'to': 'AUTO',
+            'smartresult': 'dict',
+            'client': 'fanyideskweb',
+            'salt': '1534741252894',
+            'sign': '1c2e58f79a8362e4a7b44cdd67a1a9c8',
+            'doctype': 'json',
+            'version': '2.1',
+            'keyfrom': 'fanyi.web',
+            'action': 'FY_BY_REALTIME',
+            'typoResult': 'false'
+        }
+        response = requests.post(url, headers=headers, data=data)
+        result = response.json()
+        translation = result['translateResult'][0][0]['tgt']
+        print(translation)
+        self.plainTextEdit_result.setPlainText(translation)
 
 
 if __name__ == "__main__":
