@@ -101,7 +101,7 @@ class CopyPlainTextEdit(QtWidgets.QPlainTextEdit):
 
     def translate_text(self, text):
         
-        # url = 'https://dict.youdao.com/webtranslate'
+        # url = 'https://dict.youdao.com/webtranslate' //這個是新的url，有加密過需解密，https://blog.csdn.net/Mr_blueD/article/details/90581634
         url = 'http://fanyi.youdao.com/translate?smartresult=dict&smartresult=rule'
         # 這個 URL 是通过在浏览器中使用开发者工具查看网络请求而获得的。在打开有道翻译官网后，使用开发者工具，可以看到请求的 URL，这个 URL 就是请求翻译结果的 URL。这个 URL 是可以使用 HTTP 或 HTTPS 协议的，只需要将请求的方式设置为 POST 就可以。而 URL https://fanyi.youdao.com/index.html# 是有道翻译官网的主页，不是请求翻译结果的 URL。虽然可以在该网页中输入文本并点击翻译按钮，但这个过程涉及到浏览器的 JavaScript 代码，不方便用 Python 直接模拟。
         headers = {
@@ -117,6 +117,18 @@ class CopyPlainTextEdit(QtWidgets.QPlainTextEdit):
             # 'salt': '1534741252894',
             # 'sign': '1c2e58f79a8362e4a7b44cdd67a1a9c8',
             # salt和sign在此程式碼中是有固定的值，是因為網頁前端的JavaScript程式碼是固定的，透過JavaScript計算得到的。這些值固定下來，就可以在發送請求時直接寫在data參數中。但是這些值可能會有改變，這時候你的程式就會無法取得正確的回應，因此如果需要長期使用這個程式，最好還是能夠找到計算這些值的方法，並將其寫入程式中。
+            #         function La(e) {
+            #           const t = Va(navigator.appVersion)
+            #           , o = "" + (new Date).getTime()
+            #           , n = o + parseInt(10 * Math.random(), 10)
+            #           , a = Va(_a + e + n + Na);
+            #               return {
+            #                    ts: o,
+            #                    bv: t,
+            #                   salt: n,
+            #                   sign: a
+            #               }
+            #         }
             'doctype': 'json',
             'version': '2.1',
             'keyfrom': 'fanyi.web',
