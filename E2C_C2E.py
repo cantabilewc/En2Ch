@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import requests
 import itertools
+import opencc # If you add the directory containing the opencc module to the PYTHONPATH environment variable, Python will search for the opencc module in that directory and its subdirectories. When you import opencc, Python will find the module in the opencc directory and load it into memory.
 
 
 # 在這裡，Ui_MainWindow 這個類別是繼承自 object，因為在定義 Ui_MainWindow 的時候，
@@ -44,7 +45,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "E2C C2E"))
         self.pushButton.setText(_translate("MainWindow", "Start Translating"))
 
     def startTranslating(self):
@@ -143,9 +144,12 @@ class CopyPlainTextEdit(QtWidgets.QPlainTextEdit):
         for translation in flattened_lst:
             tgt_str += translation['tgt'] # dictionary搜尋法
             tgt_str += '\n'
+
+        converter = opencc.OpenCC('s2twp') # In the above example, s2twp.json is a conversion configuration file that specifies how to convert Simplified Chinese to Traditional Chinese with Taiwan standard. You can use other configuration files to convert between different standards, such as Hong Kong, Macau, or Mainland China.
+        traditional_text = converter.convert(tgt_str)
         # print(tgt_str)  
         # translation = '\n'.join(translation)  # 將列表轉換為字符串，每個元素之間用換行符分隔
-        self.plainTextEdit_result.setPlainText(tgt_str)
+        self.plainTextEdit_result.setPlainText(traditional_text)
 
 
 if __name__ == "__main__": # if other scripts import the functions above, this line will not be executed
