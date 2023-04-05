@@ -1,4 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 import requests
 import itertools
 import opencc # If you add the directory containing the opencc module to the PYTHONPATH environment variable, Python will search for the opencc module in that directory and its subdirectories. When you import opencc, Python will find the module in the opencc directory and load it into memory.
@@ -10,24 +11,62 @@ import opencc # If you add the directory containing the opencc module to the PYT
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(400, 400)
+        MainWindow.resize(600, 400)
+        self.font = QtGui.QFont('Yu Gothic Medium', 9)
+        self.font_ja = QtGui.QFont('Yu Gothic Medium', 9)
+        self.font_ch = QtGui.QFont('微軟正黑體', 9)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(130, 40, 111, 61))
+        self.pushButton.setGeometry(QtCore.QRect(225, 40, 111, 61))
+
         self.pushButton.setObjectName("pushButton")
         self.pushButton.clicked.connect(self.startTranslating)
         self.startFlag = [False]  # 將 startFlag 變數宣告為一個 List然後在建立 CopyPlainTextEdit 物件的時候傳遞這個 List。這樣在 mousePressEvent 中就可以透過這個 List 存取到 startFlag 變數，並進行修改。
+        self.pushButton.setFont(self.font)
+        # fontDB = QtGui.QFontDatabase()
+        # for fontFamily in fontDB.families():
+        #     print(fontFamily)
+        
+        # Label
+        self.text1 = QtWidgets.QLabel("From", self.centralwidget)
+        self.text1.setGeometry(40, 40, 30, 20)
+        self.text1.setFont(self.font)
+        self.text1.setObjectName("FROM")
+        self.text2 = QtWidgets.QLabel("To", self.centralwidget)
+        self.text2.setGeometry(40, 80, 30, 20)
+        self.text2.setObjectName("TO")
+        self.text2.setFont(self.font)
+        
+        # ComboBox
+        choices = ['auto', 'zh-TW', 'en', 'ja']
+        self.comboBox1 = QtWidgets.QComboBox(self.centralwidget)
+        self.comboBox1.setGeometry(QtCore.QRect(80, 40, 60, 20))
+        self.comboBox1.addItems(choices)
+        self.comboBox1.setCurrentIndex(0)
+        self.sl = [choices[0]]
+        self.comboBox1.setObjectName("SL")
+        self.comboBox1.currentIndexChanged.connect(self.handle_selection_change)
+        self.comboBox1.setFont(self.font)
+        self.comboBox2 = QtWidgets.QComboBox(self.centralwidget)
+        self.comboBox2.setGeometry(QtCore.QRect(80, 80, 60, 20))
+        self.comboBox2.addItems(choices)
+        self.comboBox2.setCurrentIndex(1)
+        self.tl = [choices[1]]
+        self.comboBox2.setObjectName("TL")
+        self.comboBox2.currentIndexChanged.connect(self.handle_selection_change)
+        self.comboBox2.setFont(self.font)
 
         # setGeometry是所有继承自QWidget的类（例如QPlainTextEdit）都拥有的方法。在这里，
         # CopyPlainTextEdit作为QPlainTextEdit的子类，自然也具有该方法，所以可以在CopyPlainTextEdit对象上调用setGeometry方法。
         self.plainTextEdit_result = QtWidgets.QPlainTextEdit(self.centralwidget) #parent 
-        self.plainTextEdit_result.setGeometry(QtCore.QRect(40, 250, 301, 121))
+        self.plainTextEdit_result.setGeometry(QtCore.QRect(40, 250, 500, 121))
+        self.plainTextEdit_result.setFont(self.font_ch)
         self.plainTextEdit_result.setObjectName("translating result")
 
-        self.plainTextEdit = CopyPlainTextEdit(self.centralwidget, self.startFlag, self.plainTextEdit_result) # parent object, and arguments
-        self.plainTextEdit.setGeometry(QtCore.QRect(40, 120, 301, 121))
+        self.plainTextEdit = CopyPlainTextEdit(self.centralwidget, self.startFlag, self.plainTextEdit_result, self.sl, self.tl) # parent object, and arguments
+        self.plainTextEdit.setGeometry(QtCore.QRect(40, 120, 500, 121))
+        self.plainTextEdit.setFont(self.font)
 
         MainWindow.setCentralWidget(self.centralwidget)
 
@@ -42,6 +81,24 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def handle_selection_change(self):
+        self.sl[0] = self.comboBox1.currentText()
+        self.tl[0] = self.comboBox2.currentText()
+        if self.sl[0] == 'ja':
+            self.plainTextEdit.setFont(self.font_ja)
+        elif self.sl[0] == 'zh-TW':
+            self.plainTextEdit.setFont(self.font_ch)
+        else:
+            self.plainTextEdit.setFont(self.font)
+
+        if self.tl[0] == 'ja':
+            self.plainTextEdit_result.setFont(self.font_ja)
+        elif self.tl[0] == 'zh-TW':
+            self.plainTextEdit_result.setFont(self.font_ch)
+        else:
+            self.plainTextEdit_result.setFont(self.font)
+        # print(self.sl,self.tl)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -76,12 +133,14 @@ class Ui_MainWindow(object):
 # 即若在建立物件時未給定該參數，則 parent 會預設為 None，表示該物件沒有父物件，
 # 並可獨立存在。若有需要，則可在建立物件時透過指定 parent 參數的方式指定父物件，使得該物件成為該父物件的子物件。
 class CopyPlainTextEdit(QtWidgets.QPlainTextEdit):
-    def __init__(self, parent=None, startFlag=None, plainTextEdit_result=None): # 在 Python 中，None 是一個特殊的值，表示沒有值或空值。在這個程式碼中，None 被用來指定函數參數的預設值。在 __init__ 函數中，parent 參數預設值為 None，這意味著如果你不給這個參數傳遞任何值，它就會使用 None 作為預設值。同樣地，startFlag 和 plainTextEdit_result 參數的預設值也是 None，這意味著如果你不給這些參數傳遞任何值，它們也會使用 None 作為預設值。
+    def __init__(self, parent=None, startFlag=None, plainTextEdit_result=None, source_language = None, target_language = None): # 在 Python 中，None 是一個特殊的值，表示沒有值或空值。在這個程式碼中，None 被用來指定函數參數的預設值。在 __init__ 函數中，parent 參數預設值為 None，這意味著如果你不給這個參數傳遞任何值，它就會使用 None 作為預設值。同樣地，startFlag 和 plainTextEdit_result 參數的預設值也是 None，這意味著如果你不給這些參數傳遞任何值，它們也會使用 None 作為預設值。
         super().__init__(parent=parent)
         self.setReadOnly(True)
         self.setObjectName("plainTextEdit")
         self.startFlag = startFlag  # 在建立物件時將 startFlag 變數的 List 存下來
         self.plainTextEdit_result = plainTextEdit_result
+        self.source_language = source_language
+        self.target_language = target_language
 
 # 在 PyQt5 中，如果要处理某种类型的事件，通常需要使用对应的事件处理方法，
 # 并按照 PyQt5 事件处理机制的规范命名，例如 mousePressEvent，keyPressEvent 等等。
@@ -98,9 +157,59 @@ class CopyPlainTextEdit(QtWidgets.QPlainTextEdit):
             if not text:
                 return
             self.setPlainText(text)
-            self.translate_text(text)
+            self.translate_text_POST(text)
 
-    def translate_text(self, text):
+    def translate_text_POST(self, text):
+        url = 'https://translate.google.com/translate_a/single' # 是 Google 翻譯的網頁版介面，它是一個非正式的 API 端點，用於網頁界面的自動翻譯，與 Google Translate API 並不相同。 當您在 Google 翻譯的頁面按下 F12 並執行翻譯時，您看到的 URL 可能與 Google Translate API 不同。這是因為 Google 翻譯的網頁版介面使用了不同的技術和端點來實現翻譯功能。這些端點可能不是公開的 API，也可能隨時更改。
+        params = {
+            'client': 'gtx', # use 'webapp' leading to the 403 error response
+            'sl': self.source_language[0],  # source language (auto-detect)
+            'tl': self.target_language[0],  # target language (Traditional Chinese)
+            'hl': 'en',  # interface language (English)
+            'dt': ['t', 'at'],  # response format: text and alternative translations
+            'dj': '1',  # response format: JSON
+            'source': 'input',  # source of the translation: input field
+            'q': text,  # text to be translated
+        }
+
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+            'Referer': 'https://translate.google.com/',
+        }
+
+        response = requests.post(url, headers=headers, params=params) # A 403 Forbidden response usually indicates that the server understood your request, but is refusing to fulfill it, usually because the client does not have the necessary permissions to access the requested resource.
+
+        result = response.json()
+        # print('\n')
+        trans_list = []
+        for item in result['sentences']:
+            # print(item['trans'])
+            trans_list.append(item['trans'])
+        translation = '\n'.join(trans_list)
+        self.plainTextEdit_result.setPlainText(translation)
+
+    def translate_text_GET(self, text):
+        # Specify the URL and parameters for the request
+        url = "https://translate.googleapis.com/translate_a/single"
+        params = {
+            "client": "gtx",
+            "sl": "auto",
+            "tl": "zh-TW",
+            "dt": "t",
+            "q": text
+        }
+
+        # Send the request and get the response
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+
+        # Parse the response and get the translation
+        translation = response.json() #[0][0][0]
+        print('\n')
+        print(translation)
+        # self.plainTextEdit_result.setPlainText(translation)
+
+    def translate_text_youdoa(self, text): # this private translation api sucks
         
         # url = 'https://dict.youdao.com/webtranslate' //這個是新的url，有加密過需解密，https://blog.csdn.net/Mr_blueD/article/details/90581634
         url = 'http://fanyi.youdao.com/translate?smartresult=dict&smartresult=rule'
