@@ -52,7 +52,7 @@ class Ui_MainWindow(object):
         self.comboBox2.setGeometry(QtCore.QRect(80, 80, 60, 20))
         self.comboBox2.addItems(choices)
         self.comboBox2.setCurrentIndex(1)
-        self.tl = [choices[1]]
+        self.tl = [choices[1]] # default translate to TW
         self.comboBox2.setObjectName("TL")
         self.comboBox2.currentIndexChanged.connect(self.handle_selection_change)
         self.comboBox2.setFont(self.font)
@@ -132,9 +132,12 @@ class Ui_MainWindow(object):
 # 在上述程式碼中， parent=None 是在定義該函式時所設置的預設參數，
 # 即若在建立物件時未給定該參數，則 parent 會預設為 None，表示該物件沒有父物件，
 # 並可獨立存在。若有需要，則可在建立物件時透過指定 parent 參數的方式指定父物件，使得該物件成為該父物件的子物件。
+# The parent parameter in def __init__ and the parent parameter in super().__init__ refer to different objects.
+# In def __init__, parent is a parameter passed to the constructor of the CopyPlainTextEdit class. It is used to set the parent widget of the CopyPlainTextEdit widget.
+# In super().__init__, parent is also a parameter passed to the constructor of the parent class of CopyPlainTextEdit, which is QPlainTextEdit. It is used to set the parent widget of the QPlainTextEdit widget.
 class CopyPlainTextEdit(QtWidgets.QPlainTextEdit):
     def __init__(self, parent=None, startFlag=None, plainTextEdit_result=None, source_language = None, target_language = None): # 在 Python 中，None 是一個特殊的值，表示沒有值或空值。在這個程式碼中，None 被用來指定函數參數的預設值。在 __init__ 函數中，parent 參數預設值為 None，這意味著如果你不給這個參數傳遞任何值，它就會使用 None 作為預設值。同樣地，startFlag 和 plainTextEdit_result 參數的預設值也是 None，這意味著如果你不給這些參數傳遞任何值，它們也會使用 None 作為預設值。
-        super().__init__(parent=parent)
+        super().__init__(parent=parent)#def __init__(self, parent=None, startFlag=None, plainTextEdit_result=None, source_language=None, target_language=None)中的parent是CopyPlainTextEdit的父級窗口，用於將CopyPlainTextEdit添加到視窗中的特定部件（例如，在QWidget上）。在這種情況下，parent參數通常用於將視窗元素組織成層次結構。super().__init__(parent=parent)調用父類QPlainTextEdit的構造函數，其中的parent也是指定CopyPlainTextEdit的父級窗口。簡而言之，這兩個parent是指不同的東西，def __init__中的parent指CopyPlainTextEdit的父級窗口，而super().__init__(parent=parent)中的parent指QPlainTextEdit的父級窗口。
         self.setReadOnly(True)
         self.setObjectName("plainTextEdit")
         self.startFlag = startFlag  # 在建立物件時將 startFlag 變數的 List 存下來
